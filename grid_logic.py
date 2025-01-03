@@ -3,7 +3,9 @@ import numpy as np
 
 WEEK_START = 6 # 6 = sunday
 DRAW_START = datetime(2024,12,29,tzinfo=timezone.utc)
-PIXEL_MAX = 100 
+PIXEL_MAX = 100
+
+SHADES = [' ', '░', '▒', '▓', '█']
 
 assert WEEK_START == DRAW_START.weekday()
 
@@ -19,6 +21,11 @@ def normalize(img: np.ndarray):
     assert img.max() == PIXEL_MAX
     return img
 
+def quantize(img: np.ndarray):
+    img = normalize(img)
+    img = (img/PIXEL_MAX*(len(SHADES)-1)).round().astype(int)
+    return img
+
 def img_2_arr(img: np.ndarray):
     return img.T.flatten()
 
@@ -26,9 +33,18 @@ def arr_2_img(arr: np.ndarray):
     return arr.reshape((-1,7)).T
 
 def imshow(img: np.ndarray):
-    print(img.T)
+    img = quantize(img)
+    arr = img_2_arr(img)
+    arr = [SHADES[i] for i in arr]
+    txt = ''
+    for i, a in enumerate(arr):
+        txt += a
+        _, m = divmod(i+1, img.shape[1])
+        if m == 0 and i != len(arr) - 1:
+            txt += '\n'
+    print(txt)
 
 if __name__ == "__main__":
     a = np.arange(0,371)
     i = arr_2_img(a)
-    print(normalize(i))
+    imshow(i)
